@@ -1,0 +1,36 @@
+name: "Test"
+
+on: [push, workflow_dispatch]
+
+jobs:
+  graphql-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get deployment branch
+        if: always()
+        id: branch
+        uses: octokit/graphql-action@v2.2.20
+        env:
+          GITHUB_TOKEN: ${{ secrets.LFFG_TOKEN }}
+        with:
+          query: >
+            query {
+              repository(owner: "lffg", name: "rs-lox") {
+                ref(qualifiedName: "oi") {
+                  id
+                }
+              }
+            }
+      - name: Delete deployment branch
+        if: always() && fromJSON(steps.branch.outputs.data).repository.ref.id != null
+        uses: octokit/graphql-action@v2.2.20
+        env:
+          GITHUB_TOKEN: ${{ secrets.LFFG_TOKEN }}
+        with:
+          query: >
+            mutation ($ref: ID) {
+              deleteRef(input: { refId: $ref }) {
+                clientMutationId
+              }
+            }
+          ref: ${{ fromJSON(steps.branch.outputs.data).repository.ref.id }}
