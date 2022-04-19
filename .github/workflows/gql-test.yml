@@ -1,6 +1,11 @@
 name: "Test"
 
-on: [push, workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to be deleted"
+        required: false
 
 jobs:
   graphql-test:
@@ -14,13 +19,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.LFFG_TOKEN }}
         with:
           query: >
-            query {
-              repository(owner: "lffg", name: "rs-lox") {
-                ref(qualifiedName: "oi") {
+            query($repo: String!, $branch: String!) {
+              repository(owner: "lffg", name: $repo) {
+                ref(qualifiedName: $branch) {
                   id
                 }
               }
             }
+          env:
+            repo: ${{ github.event.repository.name }}
+            branch: ${{ github.event.inputs.branch }}
       - name: Delete deployment branch
         if: always() && fromJSON(steps.branch.outputs.data).repository.ref.id != null
         uses: octokit/graphql-action@v2.2.20
