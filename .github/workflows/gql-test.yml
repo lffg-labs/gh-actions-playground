@@ -26,9 +26,8 @@ jobs:
                 }
               }
             }
-          env:
-            repo: ${{ github.event.repository.name }}
-            branch: ${{ github.event.inputs.branch }}
+          repo: ${{ github.event.repository.name }}
+          branch: ${{ github.event.inputs.branch }}
       - name: Delete deployment branch
         if: always() && fromJSON(steps.branch.outputs.data).repository.ref.id != null
         uses: octokit/graphql-action@v2.2.20
