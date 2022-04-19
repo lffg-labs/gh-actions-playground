@@ -35,7 +35,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.LFFG_TOKEN }}
         with:
           query: >
-            mutation ($ref: ID) {
+            mutation ($ref: ID!) {
               deleteRef(input: { refId: $ref }) {
                 clientMutationId
               }
