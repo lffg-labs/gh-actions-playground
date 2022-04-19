@@ -19,13 +19,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.LFFG_TOKEN }}
         with:
           query: >
-            query($repo: String!, $branch: String!) {
-              repository(owner: "lffg", name: $repo) {
+            query($owner: String!, $repo: String!, $branch: String!) {
+              repository(owner: $owner, name: $repo) {
                 ref(qualifiedName: $branch) {
                   id
                 }
               }
             }
+          owner: ${{ github.event.repository.owner.login }}
           repo: ${{ github.event.repository.name }}
           branch: ${{ github.event.inputs.branch }}
       - name: Delete deployment branch
