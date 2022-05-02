@@ -7,15 +7,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@foo
         with:
           token: ${{ github.token }}
-          submodules: false
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        #                    WOOO THIS WILL FAIL ^^^^^^
-        with:
-          version: "1.0.0"
-          project_id: "foo"
-          service_account_key: "foo"
-          export_default_credentials: true
