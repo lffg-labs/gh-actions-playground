@@ -7,6 +7,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@foo
+      - uses: actions/checkout@master
         with:
           token: ${{ github.token }}
