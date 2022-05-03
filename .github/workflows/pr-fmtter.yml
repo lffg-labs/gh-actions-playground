@@ -19,6 +19,9 @@ jobs:
       - run: ls -a
       - run: pwd
 
+      - name: "Yarn Install"
+        run: yarn
+
       - run: |
           python3 .github/workflow-scripts/format-pr-body.py <<EOF
           ${{ github.event.pull_request.body }}
