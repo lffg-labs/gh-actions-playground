@@ -25,4 +25,7 @@ jobs:
           ${{ github.event.pull_request.body }}
           EOF
 
-      - run: echo ${{ steps.fmt.outputs.stdout }}
+      - run: |
+          echo <<EOF
+          ${{ steps.fmt.outputs.stdout }}
+          EOF
