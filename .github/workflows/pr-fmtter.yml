@@ -21,16 +21,8 @@ jobs:
       - name: "Format PR Body"
         id: fmt
         run: |
-          output=$(python3 .github/workflow-scripts/format-pr-body.py <<EOF
+          python3 .github/workflow-scripts/format-pr-body.py <<EOF
           ${{ github.event.pull_request.body }}
-          EOF)
-          output="${output//'%'/'%25'}"
-          output="${output//$'\n'/'%0A'}"
-          output="${output//$'\r'/'%0D'}" 
-          echo "::set-output name=fmt_result::$output"
-
-      - run: |
-          echo <<EOF
-          ${{ steps.fmt.outputs.fmt_result }}
           EOF
-      - run: echo ${{ steps.fmt.outputs.fmt_result }}
+
+      - run: echo "${{ steps.fmt.outputs.fmt_result }}"
