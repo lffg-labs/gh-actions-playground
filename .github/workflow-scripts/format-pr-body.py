@@ -23,6 +23,16 @@ def run(cmd, **kwargs):
     return res.stdout.strip()
 
 
+def print_action_output(out, *, name):
+    table = str.maketrans({
+        "\n": "%0A",
+        "\r": "%0D",
+        "%":  "%25",
+    })
+    escaped_out = out.translate(table)
+    print(f"::set-output name={name}::{escaped_out}")
+
+
 raw_pr_body = run("git interpret-trailers --only-input", stdin=sys.stdin)
 raw_pr_trailers = run("git interpret-trailers --parse", input=raw_pr_body)
 
@@ -42,4 +52,4 @@ pr_body = "\n".join([
     raw_pr_trailers
 ])
 
-print(pr_body, file=sys.stdout)
+print_action_output(pr_body, name="fmt_result")
