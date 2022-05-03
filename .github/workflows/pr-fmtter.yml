@@ -1,0 +1,18 @@
+name: "Test PR Python Workflow"
+
+on: [pull_request]
+
+jobs:
+  main:
+    name: "Main"
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.8'
+
+      - run: |
+          python3 .github/workflow-scripts/format-pr-body.py <<EOF
+          ${github.event.pull_request.body}
+          EOF
