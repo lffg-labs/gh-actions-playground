@@ -14,5 +14,5 @@ jobs:
 
       - run: |
           python3 .github/workflow-scripts/format-pr-body.py <<EOF
-          ${github.event.pull_request.body}
+          ${{ github.event.pull_request.body }}
           EOF
