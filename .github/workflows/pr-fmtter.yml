@@ -11,18 +11,18 @@ jobs:
       - uses: actions/checkout@v2
         with:
           token: ${{ github.token }}
-
       - uses: actions/setup-python@v3
         with:
           python-version: '3.8'
 
-      - run: ls -a
-      - run: pwd
-
       - name: "Yarn Install"
         run: yarn
 
-      - run: |
+      - name: "Format PR Body"
+        id: fmt
+        run: |
           python3 .github/workflow-scripts/format-pr-body.py <<EOF
           ${{ github.event.pull_request.body }}
           EOF
+
+      - run: echo ${{ steps.fmt.outputs.stdout }}
