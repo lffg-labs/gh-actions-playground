@@ -1,0 +1,9 @@
+{
+  "name": "lffg-test",
+  "version": "1.0.0",
+  "description": "woooo",
+  "main": "index.js",
+  "devDependencies": {
+    "prettier": "^2.2.1"
+  }
+}
