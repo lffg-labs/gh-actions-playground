@@ -17,6 +17,7 @@ jobs:
           
       - run: git status --porcelain
       - run: git ls-files --exclude-standard --others
+      - run: git ls-files --exclude-standard
       - run: git merge-base origin/develop HEAD
       - run: git diff --name-only --diff-filter="d" --no-rename origin/main
 
