@@ -15,7 +15,9 @@ jobs:
         with:
           python-version: '3.8'
           
+      - run: git status --porcelain
       - run: git ls-files --exclude-standard --others
+      - run: git merge-base origin/develop HEAD
       - run: git diff --name-only --diff-filter="d" --no-rename origin/main
 
       - name: "Yarn Install"
