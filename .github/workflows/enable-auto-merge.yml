@@ -43,8 +43,20 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
     needs: [query-pr]
     steps:
-      - run: echo "DESATIVOU / DEVE DESATIVAR!"
-      - run: echo '${{ needs.query-pr.outputs.pr_id }}'
+      - name: Disable Pull Request Auto Merge
+        uses: octokit/graphql-action@v2.2.20
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          query: >
+            mutation ($pull_request_id: ID!) {
+              disablePullRequestAutoMerge(input: { pullRequestId: $pull_request_id }) {
+                pullRequest {
+                  id
+                }
+              }
+            }
+          pull_request_id: ${{ needs.query-pr.outputs.pr_id }}
 
   enable-auto-merge:
     name: Enable Auto Merge
@@ -69,7 +81,7 @@ jobs:
 
           echo "::set-output name=merge_method::$merge_method";
 
-      - name: Enable Pull Request Automerge
+      - name: Enable Pull Request Auto Merge
         uses: octokit/graphql-action@v2.2.20
         env:
           GITHUB_TOKEN: ${{ github.token }}
