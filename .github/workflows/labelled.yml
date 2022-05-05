@@ -1,0 +1,19 @@
+on:
+  pull_request:
+    types:
+      - opened
+      - labeled
+      - unlabeled
+      - synchronize
+      - ready_for_review
+  pull_request_review:
+    type: [submitted]
+    
+name: Enable GH Auto-Merge
+
+jobs:
+  steps:
+    - uses: actions/checkout@v2
+      with:
+        token: ${{ github.token }}
+    - run: echo ${{ toJSON(github.event) }}
