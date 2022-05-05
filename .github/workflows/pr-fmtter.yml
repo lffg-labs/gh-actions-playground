@@ -30,4 +30,4 @@ jobs:
         env:
           INPUT_RAW_BODY: ${{ github.event.pull_request.body }}
 
-      - run: echo "${{ steps.fmt.outputs.fmt_result }}"
+      - run: echo '${{ toJSON(steps.fmt.outputs.fmt_result) }}'
