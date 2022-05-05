@@ -12,10 +12,47 @@ on:
     type: [submitted]
 
 jobs:
-  enable-auto-merge:
+  query-pr:
+    name: Query Pull Request
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      # TODO: REMOVE
+      - run: echo '${{ github.event.pull_request.labels.*.name }}'
+
+      - name: Query Pull Request ID
+        id: query_pr_id
+        uses: octokit/graphql-action@v2.2.20
+        env:
+          GITHUB_TOKEN: ${{ secrets.TMBOT_TOKEN }}
         with:
-          token: ${{ github.token }}
-      - run: echo '${{ toJSON(github.event.pull_request.labels) }}'
+          query: >
+            query ($owner: String!, $name: String!, $number: Int!) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  id
+                }
+              }
+            }
+          owner: ${{ github.event.repository.owner.login }}
+          name: ${{ github.event.repository.name }}
+          number: ${{ github.event.pull_request.number }}
+    outputs:
+      pr_id: ${{ fromJSON(steps.query_pr_id.outputs.data).repository.pullRequest.id }}
+
+  disable-auto-merge:
+    name: Disable Auto Merge
+    runs-on: ubuntu-20.04
+    if: contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
+    needs: [query-pr]
+    steps:
+      - run: echo "DESATIVOU / DEVE DESATIVAR!"
+      - run: echo '${{ needs.query-pr.outputs.pr_id }}'
+
+  enable-auto-merge:
+    name: Enable Auto Merge
+    runs-on: ubuntu-20.04
+    if: ! contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
+    needs: [query-pr]
+    steps:
+      - run: echo "ATIVOU / DEVE DESATIVAR!"
+      - run: echo '${{ needs.query-pr.outputs.pr_id }}'
