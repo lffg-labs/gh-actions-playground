@@ -1,4 +1,4 @@
-name: "Enable GH Auto-Merge"
+name: Enable GH Auto-Merge
 
 on:
   pull_request:
@@ -42,7 +42,8 @@ jobs:
   disable-auto-merge:
     name: Disable Auto Merge
     runs-on: ubuntu-20.04
-    if: contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
     needs: [query-pr]
     steps:
       - run: echo "DESATIVOU / DEVE DESATIVAR!"
@@ -51,7 +52,8 @@ jobs:
   enable-auto-merge:
     name: Enable Auto Merge
     runs-on: ubuntu-20.04
-    if: ! contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
+    if: |
+      ! contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
     needs: [query-pr]
     steps:
       - run: echo "ATIVOU / DEVE DESATIVAR!"
