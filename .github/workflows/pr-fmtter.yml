@@ -28,7 +28,7 @@ jobs:
         id: fmt
         run: |
           python3 .github/workflow-scripts/format-pr-body.py <<EOF
-          ${{ github.event.pull_request.body }}
+          ${{ toJSON(github.event.pull_request.body) }}
           EOF
 
       - run: echo "${{ steps.fmt.outputs.fmt_result }}"
