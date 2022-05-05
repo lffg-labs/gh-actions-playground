@@ -23,7 +23,7 @@ jobs:
         id: query_pr_id
         uses: octokit/graphql-action@v2.2.20
         env:
-          GITHUB_TOKEN: ${{ secrets.TMBOT_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           query: >
             query ($owner: String!, $name: String!, $number: Int!) {
