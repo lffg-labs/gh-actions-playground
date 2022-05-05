@@ -16,9 +16,6 @@ jobs:
     name: Query Pull Request
     runs-on: ubuntu-20.04
     steps:
-      # TODO: REMOVE (& BOT_TOKEN)
-      - run: echo '${{ toJSON(github.event.pull_request.labels.*.name) }}'
-
       - name: Query Pull Request ID
         id: query_pr_id
         uses: octokit/graphql-action@v2.2.20
@@ -56,5 +53,47 @@ jobs:
       ! contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
     needs: [query-pr]
     steps:
-      - run: echo "ATIVOU / DEVE DESATIVAR!"
-      - run: echo '${{ needs.query-pr.outputs.pr_id }}'
+      - name: Get Merge Method
+        id: config
+        run: >
+          base_ref=${{ github.event.pull_request.head.ref }};
+
+          case $base_ref in
+            story/*)
+              merge_method=REBASE;
+              ;;
+            *)
+              merge_method=SQUASH;
+              ;;
+          esac
+
+          echo "::set-output name=merge_method::$merge_method";
+
+      - name: Enable Pull Request Automerge
+        uses: octokit/graphql-action@v2.2.20
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          query: >
+            mutation ($pull_request_id: ID!, $merge_method: PullRequestMergeMethod, $body: String) {
+              enablePullRequestAutoMerge(input: {
+                commitBody: $body,
+                mergeMethod: $merge_method,
+                pullRequestId: $pull_request_id
+              }) {
+                pullRequest {
+                  autoMergeRequest {
+                    authorEmail
+                    commitBody
+                    commitHeadline
+                    mergeMethod
+                    enabledBy {
+                      login
+                    }
+                  }
+                }
+              }
+            }
+          pull_request_id: ${{ needs.query-pr.outputs.pr_id }}
+          merge_method: ${{ steps.config.outputs.merge_method }}
+          body: ${{ toJSON(steps.fmt.outputs.formatted_pr_body) }}
