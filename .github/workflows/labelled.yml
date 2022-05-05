@@ -16,8 +16,8 @@ jobs:
     name: Query Pull Request
     runs-on: ubuntu-20.04
     steps:
-      # TODO: REMOVE
-      - run: echo '${{ github.event.pull_request.labels.*.name }}'
+      # TODO: REMOVE (& BOT_TOKEN)
+      - run: echo '${{ toJSON(github.event.pull_request.labels.*.name) }}'
 
       - name: Query Pull Request ID
         id: query_pr_id
