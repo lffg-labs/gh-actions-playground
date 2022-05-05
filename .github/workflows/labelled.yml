@@ -1,4 +1,4 @@
-name: Enable GH Auto-Merge
+name: "Enable GH Auto-Merge"
 
 on:
   pull_request:
