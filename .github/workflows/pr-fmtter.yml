@@ -4,15 +4,30 @@ on: [pull_request]
 
 jobs:
   main:
-    name: "Main"
+    name: "Exec"
     runs-on: ubuntu-20.04
 
     steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ github.token }}
       - uses: actions/setup-python@v3
         with:
           python-version: '3.8'
+          
+      # - run: git status --porcelain
+      # - run: git ls-files --exclude-standard --others
+      # - run: git ls-files --exclude-standard
+      # - run: git merge-base origin/develop HEAD
+      # - run: git diff --name-only --diff-filter="d" --no-rename origin/main
 
-      - run: |
-          python3 .github/workflow-scripts/format-pr-body.py <<EOF
-          ${github.event.pull_request.body}
-          EOF
+      - name: "Yarn Install"
+        run: yarn
+
+      - name: "Format PR Body"
+        id: fmt
+        run: python3 .github/workflow-scripts/format-pr-body.py
+        env:
+          INPUT_RAW_BODY: ${{ github.event.pull_request.body }}
+
+      - run: echo '${{ toJSON(steps.fmt.outputs.fmt_result) }}'

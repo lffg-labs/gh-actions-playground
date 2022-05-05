@@ -1,6 +1,7 @@
 import subprocess
 import shutil
 import sys
+import os
 
 
 def run(cmd, **kwargs):
@@ -23,7 +24,24 @@ def run(cmd, **kwargs):
     return res.stdout.strip()
 
 
-raw_pr_body = run("git interpret-trailers --only-input", stdin=sys.stdin)
+def print_action_output(out, *, name):
+    table = str.maketrans({
+        "\n": "%0A",
+        "\r": "%0D",
+        "%":  "%25",
+    })
+    escaped_out = out.translate(table)
+    print(f"::set-output name={name}::{escaped_out}")
+
+
+# Should fail when `INPUT_RAW_BODY` is not defined.
+input_raw_pr_body = os.environ["INPUT_RAW_BODY"]
+
+print("------- recv -------")
+print(input_raw_pr_body)
+print("--------------------")
+
+raw_pr_body = run("git interpret-trailers --only-input", input=input_raw_pr_body)
 raw_pr_trailers = run("git interpret-trailers --parse", input=raw_pr_body)
 
 # Remove trailers from the commit message:
@@ -42,4 +60,4 @@ pr_body = "\n".join([
     raw_pr_trailers
 ])
 
-print(pr_body, file=sys.stdout)
+print_action_output(pr_body, name="fmt_result")
