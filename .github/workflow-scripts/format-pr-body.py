@@ -1,6 +1,11 @@
 import subprocess
 import shutil
 import sys
+import os
+
+
+print("------- here -------")
+print(os.environ.get("INPUT_RAW_BODY"))
 
 
 def run(cmd, **kwargs):
