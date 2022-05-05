@@ -1,0 +1,111 @@
+name: Enable GH Auto-Merge
+
+on:
+  pull_request:
+    types:
+      - opened
+      - labeled
+      - unlabeled
+      - synchronize
+      - ready_for_review
+  pull_request_review:
+    type: [submitted]
+
+jobs:
+  query-pr:
+    name: Query Pull Request
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Query Pull Request ID
+        id: query_pr_id
+        uses: octokit/graphql-action@v2.2.20
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          query: >
+            query ($owner: String!, $name: String!, $number: Int!) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  id
+                }
+              }
+            }
+          owner: ${{ github.event.repository.owner.login }}
+          name: ${{ github.event.repository.name }}
+          number: ${{ github.event.pull_request.number }}
+    outputs:
+      pr_id: ${{ fromJSON(steps.query_pr_id.outputs.data).repository.pullRequest.id }}
+
+  disable-auto-merge:
+    name: Disable Auto Merge
+    runs-on: ubuntu-20.04
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
+    needs: [query-pr]
+    steps:
+      - name: Disable Pull Request Auto Merge
+        uses: octokit/graphql-action@v2.2.20
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          query: >
+            mutation ($pull_request_id: ID!) {
+              disablePullRequestAutoMerge(input: { pullRequestId: $pull_request_id }) {
+                pullRequest {
+                  id
+                }
+              }
+            }
+          pull_request_id: ${{ needs.query-pr.outputs.pr_id }}
+
+  enable-auto-merge:
+    name: Enable Auto Merge
+    runs-on: ubuntu-20.04
+    if: |
+      ! contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
+    needs: [query-pr]
+    steps:
+      - name: Get Merge Method
+        id: config
+        run: >
+          base_ref=${{ github.event.pull_request.head.ref }};
+
+          case $base_ref in
+            story/*)
+              merge_method=REBASE;
+              ;;
+            *)
+              merge_method=SQUASH;
+              ;;
+          esac
+
+          echo "::set-output name=merge_method::$merge_method";
+
+      - name: Enable Pull Request Auto Merge
+        uses: octokit/graphql-action@v2.2.20
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          query: >
+            mutation ($pull_request_id: ID!, $merge_method: PullRequestMergeMethod, $body: String) {
+              enablePullRequestAutoMerge(input: {
+                commitBody: $body,
+                mergeMethod: $merge_method,
+                pullRequestId: $pull_request_id
+              }) {
+                pullRequest {
+                  autoMergeRequest {
+                    authorEmail
+                    commitBody
+                    commitHeadline
+                    mergeMethod
+                    enabledBy {
+                      login
+                    }
+                  }
+                }
+              }
+            }
+          pull_request_id: ${{ needs.query-pr.outputs.pr_id }}
+          merge_method: ${{ steps.config.outputs.merge_method }}
+          body: ${{ toJSON(steps.fmt.outputs.formatted_pr_body) }}
