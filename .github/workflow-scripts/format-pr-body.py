@@ -4,10 +4,6 @@ import sys
 import os
 
 
-print("------- here -------")
-print(os.environ.get("INPUT_RAW_BODY"))
-
-
 def run(cmd, **kwargs):
     """Execute the given command and return the stdout as a decoded string."""
 
@@ -38,7 +34,14 @@ def print_action_output(out, *, name):
     print(f"::set-output name={name}::{escaped_out}")
 
 
-raw_pr_body = run("git interpret-trailers --only-input", stdin=sys.stdin)
+# Should fail when `INPUT_RAW_BODY` is not defined.
+input_raw_pr_body = os.environ["INPUT_RAW_BODY"]
+
+print("------- recv -------")
+print(input_raw_pr_body)
+print("--------------------")
+
+raw_pr_body = run("git interpret-trailers --only-input", input=input_raw_pr_body)
 raw_pr_trailers = run("git interpret-trailers --parse", input=raw_pr_body)
 
 # Remove trailers from the commit message:
