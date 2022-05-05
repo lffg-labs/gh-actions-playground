@@ -1,3 +1,5 @@
+name: Enable GH Auto-Merge
+
 on:
   pull_request:
     types:
@@ -8,12 +10,12 @@ on:
       - ready_for_review
   pull_request_review:
     type: [submitted]
-    
-name: Enable GH Auto-Merge
 
 jobs:
-  steps:
-    - uses: actions/checkout@v2
-      with:
-        token: ${{ github.token }}
-    - run: echo ${{ toJSON(github.event) }}
+  enable-auto-merge:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ github.token }}
+      - run: echo ${{ toJSON(github.event) }}
