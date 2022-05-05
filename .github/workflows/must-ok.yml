@@ -1,0 +1,25 @@
+name: Must OK
+
+on:
+  pull_request:
+    types:
+      - opened
+      - labeled
+      - unlabeled
+
+jobs:
+  check-ok-label:
+    name: Check OK Label
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Fail if not OK
+        if: |
+          ! contains(github.event.pull_request.labels.*.name, 'ok')
+        run: |
+          echo "Invalid status, missing [ok] label."
+          exit 1
+      - name: All OK
+        if: |
+          contains(github.event.pull_request.labels.*.name, 'ok')
+        run: |
+          echo "OK."
