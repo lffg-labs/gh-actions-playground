@@ -51,12 +51,13 @@ jobs:
   disable-auto-merge:
     name: Disable Auto Merge
     runs-on: ubuntu-20.04
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
     needs: [query-pr]
     steps:
       - name: Disable Pull Request Auto Merge
         uses: octokit/graphql-action@v2.2.20
+        if: >
+          contains(github.event.pull_request.labels.*.name, 'no-auto-merge') ||
+          github.event.pull_request.action == 'edited'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -78,7 +79,7 @@ jobs:
     runs-on: ubuntu-20.04
     if: |
       ! contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
-    needs: [query-pr]
+    needs: [query-pr, disable-auto-merge]
     steps:
       - uses: actions/checkout@v2
         with:
