@@ -53,13 +53,11 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [query-pr]
     steps:
-      - run: echo '${{ github.event.pull_request.action }}'
-      - run: echo '${{ toJSON(github.event) }}'
       - name: Disable Pull Request Auto Merge
         uses: octokit/graphql-action@v2.2.20
         if: >
           contains(github.event.pull_request.labels.*.name, 'no-auto-merge') ||
-          github.event.pull_request.action == 'edited'
+          github.event.action == 'edited'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
