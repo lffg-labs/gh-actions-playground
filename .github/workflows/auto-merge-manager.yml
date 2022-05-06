@@ -57,7 +57,7 @@ jobs:
         uses: octokit/graphql-action@v2.2.20
         if: >
           contains(github.event.pull_request.labels.*.name, 'no-auto-merge') ||
-          github.event.pull_request.action == 'edited'
+          github.event.action == 'edited'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
