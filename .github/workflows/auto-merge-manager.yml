@@ -54,7 +54,7 @@ jobs:
     needs: [query-pr]
     steps:
       - run: echo '${{ github.event.pull_request.action }}'
-      - run: echo ${{ github.event.pull_request.action == 'edited' }}
+      - run: echo '${{ toJSON(github.event.pull_request) }}'
       - name: Disable Pull Request Auto Merge
         uses: octokit/graphql-action@v2.2.20
         if: >
