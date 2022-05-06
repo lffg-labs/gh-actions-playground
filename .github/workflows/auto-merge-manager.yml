@@ -51,8 +51,9 @@ jobs:
   disable-auto-merge:
     name: Disable Auto Merge
     runs-on: ubuntu-20.04
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
+    if: >
+      contains(github.event.pull_request.labels.*.name, 'no-auto-merge') ||
+      github.event.pull_request.action == 'edited'
     needs: [query-pr]
     steps:
       - name: Disable Pull Request Auto Merge
@@ -78,7 +79,7 @@ jobs:
     runs-on: ubuntu-20.04
     if: |
       ! contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
-    needs: [query-pr]
+    needs: [query-pr, disable-auto-merge]
     steps:
       - uses: actions/checkout@v2
         with:
