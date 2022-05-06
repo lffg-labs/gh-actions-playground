@@ -1,4 +1,4 @@
-name: Enable GH Auto-Merge
+name: Auto Merge Manager
 
 on:
   pull_request:
@@ -12,10 +12,18 @@ on:
   pull_request_review:
     type: [submitted]
 
+concurrency:
+  group: auto-merge-manager-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
+  #
+  # Common
+  #
   query-pr:
     name: Query Pull Request
     runs-on: ubuntu-20.04
+
     steps:
       - name: Query Pull Request ID
         id: query_pr_id
@@ -23,7 +31,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          query: >
+          query: |
             query ($owner: String!, $name: String!, $number: Int!) {
               repository(owner: $owner, name: $name) {
                 pullRequest(number: $number) {
@@ -37,6 +45,9 @@ jobs:
     outputs:
       pr_id: ${{ fromJSON(steps.query_pr_id.outputs.data).repository.pullRequest.id }}
 
+  #
+  # Disable Auto Merge
+  #
   disable-auto-merge:
     name: Disable Auto Merge
     runs-on: ubuntu-20.04
@@ -49,7 +60,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          query: >
+          query: |
             mutation ($pull_request_id: ID!) {
               disablePullRequestAutoMerge(input: { pullRequestId: $pull_request_id }) {
                 pullRequest {
@@ -59,6 +70,9 @@ jobs:
             }
           pull_request_id: ${{ needs.query-pr.outputs.pr_id }}
 
+  #
+  # Enable Auto Merge
+  #
   enable-auto-merge:
     name: Enable Auto Merge
     runs-on: ubuntu-20.04
@@ -66,9 +80,26 @@ jobs:
       ! contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
     needs: [query-pr]
     steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ github.token }}
+
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+
+      - run: yarn install
+
+        # The following script outputs `steps.fmt.outputs.formatted_pr_body`.
+      - name: "Format PR Body"
+        id: fmt
+        run: python3 .github/workflow-scripts/format-pr-body.py
+        env:
+          RAW_PR_BODY: ${{ github.event.pull_request.body }}
+
       - name: Get Merge Method
         id: config
-        run: >
+        run: |
           base_ref=${{ github.event.pull_request.head.ref }};
 
           case $base_ref in
@@ -87,23 +118,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          query: >
-            mutation ($pull_request_id: ID!, $merge_method: PullRequestMergeMethod, $body: String) {
-              enablePullRequestAutoMerge(input: {
-                commitBody: $body,
-                mergeMethod: $merge_method,
-                pullRequestId: $pull_request_id
-              }) {
+          query: |
+            mutation (
+              $pull_request_id: ID!
+              $merge_method: PullRequestMergeMethod
+              $body: String
+            ) {
+              enablePullRequestAutoMerge(
+                input: {
+                  pullRequestId: $pull_request_id
+                  mergeMethod: $merge_method
+                  commitBody: $body
+                }
+              ) {
                 pullRequest {
-                  autoMergeRequest {
-                    authorEmail
-                    commitBody
-                    commitHeadline
-                    mergeMethod
-                    enabledBy {
-                      login
-                    }
-                  }
+                  id
                 }
               }
             }

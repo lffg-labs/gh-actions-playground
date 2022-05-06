@@ -24,40 +24,38 @@ def run(cmd, **kwargs):
     return res.stdout.strip()
 
 
-def print_action_output(out, *, name):
+def emit_action_output(data, *, name):
+    """"Escape the given `out` following GitHub Action's escape criteria."""
+
     table = str.maketrans({
         "\n": "%0A",
         "\r": "%0D",
         "%":  "%25",
     })
-    escaped_out = out.translate(table)
-    print(f"::set-output name={name}::{escaped_out}")
+    escaped = data.translate(table)
+    print(f"::set-output name={name}::{escaped}")
 
 
-# Should fail when `INPUT_RAW_BODY` is not defined.
-input_raw_pr_body = os.environ["INPUT_RAW_BODY"]
+# The script should fail if the runner doesn't provide this environment variable.
+raw_pr_body = os.environ["RAW_PR_BODY"]
 
-print("------- recv -------")
-print(input_raw_pr_body)
-print("--------------------")
-
-raw_pr_body = run("git interpret-trailers --only-input", input=input_raw_pr_body)
-raw_pr_trailers = run("git interpret-trailers --parse", input=raw_pr_body)
+pr_body = run("git interpret-trailers --only-input", input=raw_pr_body)
+pr_trailers = run("git interpret-trailers --parse", input=pr_body)
 
 # Remove trailers from the commit message:
-filtered_pr_body = raw_pr_body[0:-len(raw_pr_trailers)]
+filtered_body = pr_body.removesuffix(pr_trailers)
 
 # Format `filtered_body` with Prettier:
 formatted_body = run(
     "yarn --silent prettier --parser=markdown --prose-wrap=always --print-width=88",
-    input=filtered_pr_body
+    input=filtered_body
 )
 
 # Join the formatted body with the original trailers:
-pr_body = "\n".join([
+formatted_pr_body = "\n".join([
     formatted_body.strip(),
     "",
-    raw_pr_trailers
+    pr_trailers
 ])
 
-print_action_output(pr_body, name="fmt_result")
+emit_action_output(formatted_pr_body.strip(), name="formatted_pr_body")
