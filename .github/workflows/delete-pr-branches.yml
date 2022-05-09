@@ -28,5 +28,15 @@ jobs:
           owner: ${{ github.event.repository.owner.login }}
           name: ${{ github.event.repository.name }}
           ref: ${{ github.event.pull_request.head.ref }}
-
-      - run: echo ${{ fromJSON(steps.branch.outputs.data).repository.ref.id }}
+      - name: Delete Branch
+        uses: octokit/graphql-action@v2.2.20
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          query: >
+            mutation ($ref: ID!) {
+              deleteRef(input: { refId: $ref }) {
+                clientMutationId
+              }
+            }
+          ref: ${{ fromJSON(steps.branch.outputs.data).repository.ref.id }}
