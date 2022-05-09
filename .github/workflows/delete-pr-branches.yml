@@ -11,5 +11,22 @@ jobs:
     if: ${{ !github.event.pull_request.merged }}
 
     steps:
-      - run: echo '${{ toJSON(github.event) }}'
-      - run: echo '${{ toJSON(github.event.pull_request) }}'
+      - name: Get Branch ID
+        id: branch
+        uses: octokit/graphql-action@v2.2.20
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          query: >
+            query ($owner: String!, $name: String!, $ref: String!) {
+              repository(owner: $owner, name: $name) {
+                ref(qualifiedName: $ref) {
+                  id
+                }
+              }
+            }
+          owner: ${{ github.event.repository.owner.login }}
+          name: ${{ github.event.repository.name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - run: echo ${{ fromJSON(steps.branch.outputs.data).repository.ref.id }}
