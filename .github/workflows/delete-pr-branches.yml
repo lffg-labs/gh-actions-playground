@@ -11,4 +11,5 @@ jobs:
     if: ${{ !github.event.pull_request.merged }}
 
     steps:
+      - run: echo '${{ toJSON(github.event) }}'
       - run: echo '${{ toJSON(github.event.pull_request) }}'
