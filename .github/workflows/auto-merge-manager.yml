@@ -30,6 +30,9 @@ jobs:
         uses: octokit/graphql-action@v2.2.20
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          INPUT_OWNER: ${{ github.event.repository.owner.login }}
+          INPUT_NAME: ${{ github.event.repository.name }}
+          INPUT_NUMBER: ${{ github.event.pull_request.number }}
         with:
           query: |
             query ($owner: String!, $name: String!, $number: Int!) {
@@ -39,9 +42,6 @@ jobs:
                 }
               }
             }
-          owner: ${{ github.event.repository.owner.login }}
-          name: ${{ github.event.repository.name }}
-          number: ${{ github.event.pull_request.number }}
     outputs:
       pr_id: ${{ fromJSON(steps.query_pr_id.outputs.data).repository.pullRequest.id }}
 
@@ -60,6 +60,7 @@ jobs:
           github.event.action == 'edited'
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          INPUT_PULL_REQUEST_ID: ${{ needs.query-pr.outputs.pr_id }}
         with:
           query: |
             mutation ($pull_request_id: ID!) {
@@ -69,7 +70,6 @@ jobs:
                 }
               }
             }
-          pull_request_id: ${{ needs.query-pr.outputs.pr_id }}
 
   #
   # Enable Auto Merge
@@ -118,6 +118,9 @@ jobs:
         uses: octokit/graphql-action@v2.2.20
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          INPUT_PULL_REQUEST_ID: ${{ needs.query-pr.outputs.pr_id }}
+          INPUT_MERGE_METHOD: ${{ steps.config.outputs.merge_method }}
+          INPUT_BODY: ${{ toJSON(steps.fmt.outputs.formatted_pr_body) }}
         with:
           query: |
             mutation (
@@ -137,6 +140,3 @@ jobs:
                 }
               }
             }
-          pull_request_id: ${{ needs.query-pr.outputs.pr_id }}
-          merge_method: ${{ steps.config.outputs.merge_method }}
-          body: ${{ toJSON(steps.fmt.outputs.formatted_pr_body) }}
