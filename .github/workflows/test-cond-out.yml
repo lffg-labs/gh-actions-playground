@@ -3,8 +3,8 @@ name: "Testing"
 on:
   workflow_dispatch:
     inputs:
-      message:
-        description: "Message to be echoed"
+      value:
+        description: "Value to be used"
         required: false
 
 jobs:
@@ -15,8 +15,8 @@ jobs:
         id: gen
         run: |
           echo "will write:"
-          echo "[value=${{ github.event.inputs.branch }}]"
-          echo "value=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
+          echo "[value=${{ github.event.inputs.value }}]"
+          echo "value=${{ github.event.inputs.value }}" >> $GITHUB_OUTPUT
 
       - name: Show
         run: |
