@@ -1,0 +1,28 @@
+name: "Testing"
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: "Message to be echoed"
+        required: false
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set output
+        id: gen
+        run: echo "value=false" >> $GITHUB_OUTPUT
+
+      - name: Show
+        run: |
+          echo "Raw:"
+          echo "->${{ steps.gen.outputs.value }}<-"
+          echo ""
+          echo "JSON:"
+          echo "->${{ toJSON(steps.gen.outputs.value) }}<-"
+
+      - name: Eval
+        if: steps.gen.outputs.value
+        run: echo "woo!"
