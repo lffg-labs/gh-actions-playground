@@ -13,7 +13,10 @@ jobs:
     steps:
       - name: Set output
         id: gen
-        run: echo "value=false" >> $GITHUB_OUTPUT
+        run: |
+          echo "will write:"
+          echo "[value=${{ github.event.inputs.branch }}]"
+          echo "value=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
 
       - name: Show
         run: |
