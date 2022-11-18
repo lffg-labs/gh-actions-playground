@@ -14,12 +14,13 @@ jobs:
       - name: Set output
         id: gen
         run: |
-          BASH_VAR='${{ contains(github.event.inputs.value, 'foo') }}'
-          BASH_VAR_JSON='${{ toJSON(contains(github.event.inputs.value, 'foo')) }}'
-          echo "BASH_VAR: [$BASH_VAR]"
-          echo "BASH_VAR_JSON: [$BASH_VAR_JSON]"
+          cond='${{ contains(github.event.inputs.value, 'foo') }}'
 
-          echo "value=1" >> $GITHUB_OUTPUT
+          out=''
+
+          [[ $cond = "true" ]] && out='true'
+
+          echo "value=$out" >> "$GITHUB_OUTPUT"
 
       - name: Show
         run: |
