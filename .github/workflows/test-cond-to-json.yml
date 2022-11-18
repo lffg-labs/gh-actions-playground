@@ -1,0 +1,34 @@
+name: "Testing"
+
+on:
+  workflow_dispatch:
+    inputs:
+      value:
+        description: "Value to be used"
+        required: false
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set output
+        id: gen
+        run: |
+          BASH_VAR='${{ contains(github.event.inputs.value, 'foo') }}'
+          BASH_VAR_JSON='${{ toJSON(contains(github.event.inputs.value, 'foo')) }}'
+          echo "BASH_VAR: [$BASH_VAR]"
+          echo "BASH_VAR_JSON: [$BASH_VAR_JSON]"
+
+          echo "value=1" >> $GITHUB_OUTPUT
+
+      - name: Show
+        run: |
+          echo "Raw:"
+          echo "->${{ steps.gen.outputs.value }}<-"
+          echo ""
+          echo "JSON:"
+          echo "->${{ toJSON(steps.gen.outputs.value) }}<-"
+
+      - name: Eval
+        if: steps.gen.outputs.value
+        run: echo "woo!"
