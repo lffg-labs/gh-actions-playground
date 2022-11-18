@@ -1,4 +1,4 @@
-name: "Testing"
+name: "Test Cond JSON GHA -> BASH"
 
 on:
   workflow_dispatch:
